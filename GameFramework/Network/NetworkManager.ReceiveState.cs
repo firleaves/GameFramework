@@ -14,14 +14,26 @@ namespace GameFramework.Network
     {
         private sealed class ReceiveState : IDisposable
         {
-            private const int DefaultBufferLength = 1024 * 64;
+            private const int DefaultBufferLength = 32767;
             private MemoryStream m_Stream;
             private IPacketHeader m_PacketHeader;
             private bool m_Disposed;
 
+            private MemoryStream m_CacheReceiveStream = null;
+
+            public ushort Header
+            {
+                get;
+                set;
+            } = 0;
+            public bool WaitingNextPacket 
+            {
+                get;set;
+            }
             public ReceiveState()
             {
                 m_Stream = new MemoryStream(DefaultBufferLength);
+                //m_CacheReceiveStream = new MemoryStream(DefaultBufferLength);
                 m_PacketHeader = null;
                 m_Disposed = false;
             }
@@ -47,13 +59,55 @@ namespace GameFramework.Network
                 Reset(packetHeaderLength, null);
             }
 
+
+            /// <summary>
+            /// 保存stream里面数据
+            /// </summary>
+            public void SaveStreamData()
+            {
+                //GameFrameworkLog.Warning("SaveStreamData");
+                if (m_CacheReceiveStream==null)
+                {
+                    
+                    m_CacheReceiveStream = new MemoryStream(DefaultBufferLength);
+                }
+                else
+                {
+                    m_CacheReceiveStream.Capacity = m_CacheReceiveStream.Capacity + DefaultBufferLength;
+                }
+                
+                m_CacheReceiveStream.Write(Stream.GetBuffer(), (int)Stream.Position, (int)(Stream.Length - Stream.Position));
+                //m_Stream.Capacity = m_Stream.Capacity+size;
+                //GameFrameworkLog.Warning("开始等待下一个包");
+                //Reset(packetHeaderLength, null);
+
+            }
+            
+            /// <summary>
+            /// 讲缓存的stream数据转移到stream内,并重新计算长度,并且清理缓存stream
+            /// </summary>
+            public void TransferStream()
+            {
+                if(m_CacheReceiveStream!=null && m_CacheReceiveStream.Length > 0)
+                {
+                    
+                    m_Stream.Write(m_CacheReceiveStream.ToArray(), 0, (int)m_CacheReceiveStream.Length);
+                    m_Stream.Position = 0L;
+                    m_PacketHeader.PacketLength = (int)m_Stream.Length;
+                    //GameFrameworkLog.Warning($"合并大包{m_CacheReceiveStream.Length}");
+                    m_CacheReceiveStream.Dispose();
+                    m_CacheReceiveStream = null;
+                }
+                
+            }
+            
             public void PrepareForPacket(IPacketHeader packetHeader)
             {
                 if (packetHeader == null)
                 {
                     throw new GameFrameworkException("Packet header is invalid.");
                 }
-
+               
                 Reset(packetHeader.PacketLength, packetHeader);
             }
 
@@ -77,6 +131,11 @@ namespace GameFramework.Network
                         m_Stream.Dispose();
                         m_Stream = null;
                     }
+                    if(m_CacheReceiveStream!=null)
+                    {
+                        m_CacheReceiveStream.Dispose();
+                        m_CacheReceiveStream = null;
+                    }
                 }
 
                 m_Disposed = true;
@@ -88,7 +147,7 @@ namespace GameFramework.Network
                 {
                     throw new GameFrameworkException("Target length is invalid.");
                 }
-
+                
                 m_Stream.Position = 0L;
                 m_Stream.SetLength(targetLength);
                 m_PacketHeader = packetHeader;

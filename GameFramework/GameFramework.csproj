@@ -17,11 +17,11 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\SanGuo\Assets\GameFramework\Libraries\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\GameFramework.xml</DocumentationFile>
+    <DocumentationFile>GameFramework.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -176,6 +176,7 @@
     <Compile Include="Network\NetworkManager.NetworkChannelBase.cs" />
     <Compile Include="Network\NetworkManager.ReceiveState.cs" />
     <Compile Include="Network\NetworkManager.SendState.cs" />
+    <Compile Include="Network\NetWorkManager.TcpBigPacketNetWorkChannel.cs" />
     <Compile Include="Network\NetworkManager.TcpNetworkChannel.cs" />
     <Compile Include="Network\NetworkManager.TcpWithSyncReceiveNetworkChannel.cs" />
     <Compile Include="Network\NetworkMissHeartBeatEventArgs.cs" />

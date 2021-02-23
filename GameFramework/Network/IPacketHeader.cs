@@ -18,6 +18,16 @@ namespace GameFramework.Network
         int PacketLength
         {
             get;
+            set;
+        }
+
+        /// <summary>
+        /// 消息头内容
+        /// </summary>
+        ushort Header
+        {
+            get;
+            set;
         }
     }
 }
